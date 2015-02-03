@@ -1,0 +1,67 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides: mangosd
+# Required-Start: $local_fs $remote_fs $network $syslog $named
+# Required-Stop: $local_fs $remote_fs $network $syslog $named
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# X-Interactive: false
+# Short-Description: mangosd service
+### END INIT INFO
+. /etc/init.d/functions
+
+BASENAME=mangosd
+EXEC=/opt/mangos/bin/$BASENAME
+USER=mangos
+
+start() {
+    local pid=$(pidof $BASENAME)
+    if [ -z $pid ] ; then
+        echo "Starting $BASENAME..."
+        daemon --user=$USER "screen -dmS $BASENAME $EXEC"
+    else
+        echo "$BASENAME is already running: $pid"
+        exit 2;
+    fi
+}
+
+stop() {
+    local pid=$(pidof $BASENAME)
+    if [ -z $pid ] ; then
+        echo "$BASENAME is not running."
+        exit 2;
+    else
+        echo "Stopping $BASENAME..."
+        killproc $EXEC 9
+    fi
+}
+
+status() {
+    local pid=$(pidof $BASENAME)
+    if [ -z $pid ] ; then
+        echo "$BASENAME is not running."
+    else
+        echo "$BASENAME is running as pid $pid."
+    fi
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    restart|reload|force-reload)
+        stop
+        start
+        ;;
+    status)
+        status
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|reload|force-reload|restart|status}"
+        exit 1
+esac
+
+exit 0
